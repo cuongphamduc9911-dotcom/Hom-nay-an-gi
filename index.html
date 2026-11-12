@@ -74,12 +74,9 @@ button.secondary{background:#eee9fb;color:#503b91;box-shadow:none}button:disable
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
 <script>
+ <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 /* DÁN firebaseConfig của bạn vào đây theo hướng dẫn trong README.txt */
 const firebaseConfig = {
-
-
-
-
   apiKey: "AIzaSyCqfEfJXYSpUqHfsJVfb2C4rjAvCW7ypHA",
   authDomain: "dop-gi-nao.firebaseapp.com",
   databaseURL: "https://dop-gi-nao-default-rtdb.asia-southeast1.firebasedatabase.app",
@@ -152,7 +149,7 @@ async function spin(){
  }catch(e){$("result").textContent="Lỗi kết nối, thử lại nhé.";}
  setTimeout(()=>{spinning=false;render();},1250);
 }
-$("createBtn").onclick=async()=>{
+$("createBtn").onclick=async()=>{await ensureAuth();
  if(!configured()){status("Bạn cần làm bước cấu hình Firebase trong README.txt trước nhé.");return;}
  if(!db){firebase.initializeApp(firebaseConfig);db=firebase.database();}
  const id=makeCode();myName=$("nickname").value.trim()||"Người chơi";
