@@ -157,7 +157,7 @@ $("createBtn").onclick=async()=>{await ensureAuth();
  try{await db.ref("rooms/"+id).set(initial);roomId=id;roomRef=db.ref("rooms/"+id);$("setup").classList.add("hidden");$("game").classList.remove("hidden");$("roomCode").textContent=id;roomRef.on("value",s=>{state=s.val();render();});}
  catch(e){status("Không tạo được phòng. Kiểm tra cấu hình và quyền Firebase.");}
 };
-$("joinBtn").onclick=()=>{
+$("joinBtn").onclick=()=>{await ensureAuth();
  if(!configured()){status("Bạn cần làm bước cấu hình Firebase trong README.txt trước nhé.");return;}
  if(!db){firebase.initializeApp(firebaseConfig);db=firebase.database();}
  const id=$("roomInput").value.trim();if(id.length!==6){status("Mã phòng gồm 6 ký tự.");return;}enterRoom(id);
