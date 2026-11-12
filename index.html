@@ -94,6 +94,12 @@ const $=id=>document.getElementById(id);
 let db=null, roomRef=null, roomId=null, playerId=localStorage.getItem("han_player_id")||("p"+Math.random().toString(36).slice(2,11)), myName="", state=null, spinning=false;
 localStorage.setItem("han_player_id",playerId);
 function configured(){return firebaseConfig.apiKey!=="YOUR_API_KEY" && firebaseConfig.projectId!=="YOUR_PROJECT_ID";}
+ async function ensureAuth(){
+  if(!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+  const auth=firebase.auth();
+  if(!auth.currentUser) await auth.signInAnonymously();
+  playerId=auth.currentUser.uid;
+ }
 function status(msg){$("setupStatus").textContent=msg;}
 function esc(s){return String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));}
 function makeCode(){return Math.random().toString(36).slice(2,8).toUpperCase();}
