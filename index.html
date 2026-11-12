@@ -1,0 +1,159 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Hôm Nay Ăn Gì? 🎡</title>
+<style>
+:root{--ink:#27213b;--pink:#ff6b9a;--purple:#7757d8;--bg:#fff8f2}
+*{box-sizing:border-box}body{margin:0;background:linear-gradient(145deg,#fff1f5,#f5f0ff 55%,#fff8e9);font-family:system-ui,-apple-system,Segoe UI,sans-serif;color:var(--ink);min-height:100vh}
+main{max-width:760px;margin:auto;padding:24px 16px 48px}.hero{text-align:center;padding:12px 0 20px}
+h1{font-size:clamp(30px,7vw,46px);margin:8px 0;color:#5b3db4}.sub{color:#706982;margin:0}
+.panel{background:#ffffffdf;border:1px solid #eee5ff;border-radius:24px;padding:20px;box-shadow:0 12px 35px #49328b12;margin:14px 0}
+label{font-weight:700;display:block;margin:8px 0}.row{display:flex;gap:10px;flex-wrap:wrap}
+input,button{font:inherit;border-radius:14px;padding:13px 15px;border:1px solid #ded6ef}
+input{width:100%;background:white;color:var(--ink)}.row input{flex:1;min-width:170px}
+button{border:0;background:linear-gradient(135deg,var(--purple),#a35bd4);color:white;font-weight:750;cursor:pointer;box-shadow:0 5px 14px #7757d833}
+button.secondary{background:#eee9fb;color:#503b91;box-shadow:none}button:disabled{opacity:.45;cursor:not-allowed}
+.hidden{display:none!important}.muted{color:#777087;font-size:14px}.status{padding:10px 12px;background:#f4f0ff;border-radius:12px;margin-top:12px;font-size:14px}
+.people{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.person{background:#fff;border:1px solid #eee5ff;border-radius:16px;padding:14px;min-height:105px}
+.person strong{display:block;margin-bottom:8px}.food{font-size:18px;font-weight:800;color:#5b3db4}
+.wheelwrap{display:grid;place-items:center;padding:10px}
+.wheel{width:min(76vw,310px);aspect-ratio:1;border-radius:50%;border:9px solid white;box-shadow:0 8px 25px #4b367d24;background:conic-gradient(#ff8fab 0 45deg,#ffd166 45deg 90deg,#7bdff2 90deg 135deg,#b2f7ef 135deg 180deg,#cdb4db 180deg 225deg,#ffc8dd 225deg 270deg,#a0c4ff 270deg 315deg,#d0f4de 315deg 360deg);display:grid;place-items:center;position:relative;transition:transform 1.2s cubic-bezier(.12,.75,.15,1)}
+.wheel:after{content:"";position:absolute;inset:27%;background:#fff;border-radius:50%;box-shadow:0 3px 12px #5b3db433}
+.wheel span{z-index:1;font-size:46px}.pointer{font-size:28px;margin-bottom:-8px;color:#e14d83}
+.center{text-align:center}.result{font-size:22px;font-weight:850;color:#5b3db4;min-height:32px}
+.smallbtn{padding:9px 12px;font-size:14px}
+@media(max-width:440px){.panel{padding:16px}.people{gap:8px}.person{padding:11px}}
+</style>
+</head>
+<body>
+<main>
+ <header class="hero">
+  <div style="font-size:42px">🍜 🎡 🍕</div>
+  <h1>Hôm Nay Ăn Gì?</h1>
+  <p class="sub">4 người · 4 lượt quay · Không trùng món</p>
+ </header>
+
+ <section class="panel" id="setup">
+  <h2>Vào phòng chung</h2>
+  <p class="muted">Một người tạo phòng rồi gửi mã phòng cho 3 người còn lại.</p>
+  <label for="nickname">Tên hoặc biệt danh của bạn</label>
+  <input id="nickname" maxlength="18" placeholder="Ví dụ: Đạt">
+  <div style="height:12px"></div>
+  <div class="row">
+   <button id="createBtn">✨ Tạo phòng mới</button>
+  </div>
+  <div style="height:14px"></div>
+  <label for="roomInput">Hoặc nhập mã phòng có sẵn</label>
+  <div class="row"><input id="roomInput" maxlength="6" placeholder="Ví dụ: A7K9Q2"><button id="joinBtn">Vào phòng</button></div>
+  <div class="status" id="setupStatus">Cần cấu hình Firebase trước khi sử dụng chung. Xem README.txt đi kèm.</div>
+ </section>
+
+ <section class="panel hidden" id="game">
+  <div class="row" style="justify-content:space-between;align-items:center">
+   <div><div class="muted">MÃ PHÒNG</div><div style="font-size:25px;font-weight:900;letter-spacing:3px" id="roomCode">------</div></div>
+   <button class="secondary smallbtn" id="copyBtn">Sao chép mã</button>
+  </div>
+  <p class="muted" id="roomHint">Gửi mã này cho 3 người bạn để cùng tham gia.</p>
+  <div class="people" id="people"></div>
+  <div class="center" style="padding-top:20px">
+   <div class="pointer">▼</div>
+   <div class="wheel" id="wheel"><span>🎡</span></div>
+   <p class="muted" id="turnText">Đang chờ người chơi...</p>
+   <div class="result" id="result">Sẵn sàng chưa?</div>
+   <button id="spinBtn" style="width:100%;max-width:320px;margin-top:10px">QUAY LƯỢT CỦA TÔI</button>
+   <p class="muted">Mỗi người chỉ quay một lần. Món đã ra sẽ không xuất hiện lại.</p>
+  </div>
+  <div class="row" style="justify-content:center"><button class="secondary smallbtn" id="leaveBtn">Rời phòng</button></div>
+ </section>
+ <p class="muted center">Không cần cài ứng dụng. Mở bằng Chrome hoặc trình duyệt điện thoại.</p>
+</main>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+<script>
+/* DÁN firebaseConfig của bạn vào đây theo hướng dẫn trong README.txt */
+const firebaseConfig = {
+  apiKey: "YOUR_API_KEY",
+  authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
+  databaseURL: "https://YOUR_PROJECT_ID-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "YOUR_PROJECT_ID",
+  appId: "YOUR_APP_ID"
+};
+const foods=["Lẩu Thái 🍲","Nướng BBQ 🥩","Bún đậu 🍜","Nem nướng","Gà rán 🍗","Pizza 🍕","Mì cay 🌶️","Phở 🍜","Bánh mì 🥖","Tokbokki 🍢","Cơm rang 🍛","Ốc 🐚"];
+const $=id=>document.getElementById(id);
+let db=null, roomRef=null, roomId=null, playerId=localStorage.getItem("han_player_id")||("p"+Math.random().toString(36).slice(2,11)), myName="", state=null, spinning=false;
+localStorage.setItem("han_player_id",playerId);
+function configured(){return firebaseConfig.apiKey!=="YOUR_API_KEY" && firebaseConfig.projectId!=="YOUR_PROJECT_ID";}
+function status(msg){$("setupStatus").textContent=msg;}
+function esc(s){return String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));}
+function makeCode(){return Math.random().toString(36).slice(2,8).toUpperCase();}
+function enterRoom(id){
+ roomId=id.toUpperCase(); myName=$("nickname").value.trim()||"Người chơi";
+ roomRef=db.ref("rooms/"+roomId);
+ roomRef.transaction(cur=>{
+  if(!cur)return; // room must already exist except create path
+  cur.players=cur.players||{};
+  if(!cur.players[playerId] && Object.keys(cur.players).length>=4)return;
+  cur.players[playerId]={name:myName,joinedAt:Date.now()};
+  return cur;
+ },(err,committed,snap)=>{
+  if(err||!committed){status("Không vào được phòng. Kiểm tra mã phòng hoặc phòng đã đủ 4 người.");return;}
+  $("setup").classList.add("hidden");$("game").classList.remove("hidden");
+  $("roomCode").textContent=roomId;
+  roomRef.on("value",s=>{state=s.val();render();});
+ });
+}
+function render(){
+ if(!state)return;
+ const players=Object.entries(state.players||{});
+ const spins=state.spins||{};
+ $("people").innerHTML=Array.from({length:4},(_,i)=>{
+  const p=players[i]; if(!p)return `<div class="person"><strong>Người ${i+1}</strong><span class="muted">Đang chờ tham gia...</span></div>`;
+  const food=spins[p[0]];
+  return `<div class="person"><strong>${esc(p[1].name)}</strong>${food?`<div class="food">${esc(food)}</div>`:`<span class="muted">Chưa quay</span>`}</div>`;
+ }).join("");
+ const mine=!!spins[playerId], done=Object.keys(spins).length>=4;
+ $("turnText").textContent=done?"Đã đủ 4 lượt quay!":`${Object.keys(spins).length}/4 người đã quay`;
+ $("spinBtn").disabled=mine||done||spinning||players.length<1;
+ $("spinBtn").textContent=mine?"Bạn đã quay rồi":done?"Đã hoàn thành":"QUAY LƯỢT CỦA TÔI";
+ $("result").textContent=mine?spins[playerId]:(done?"Cả nhóm chốt món thôi!":"Đến lượt bạn!");
+}
+async function spin(){
+ if(!roomRef||spinning)return;
+ spinning=true;$("spinBtn").disabled=true;$("result").textContent="Đang quay...";
+ $("wheel").style.transform=`rotate(${1080+Math.floor(Math.random()*720)}deg)`;
+ try{
+  await roomRef.transaction(cur=>{
+   if(!cur||!cur.players||!cur.players[playerId])return;
+   cur.spins=cur.spins||{};
+   if(cur.spins[playerId]||Object.keys(cur.spins).length>=4)return;
+   const used=Object.values(cur.spins);
+   const remaining=foods.filter(f=>!used.includes(f));
+   const choice=remaining[Math.floor(Math.random()*remaining.length)];
+   cur.spins[playerId]=choice;
+   return cur;
+  });
+ }catch(e){$("result").textContent="Lỗi kết nối, thử lại nhé.";}
+ setTimeout(()=>{spinning=false;render();},1250);
+}
+$("createBtn").onclick=async()=>{
+ if(!configured()){status("Bạn cần làm bước cấu hình Firebase trong README.txt trước nhé.");return;}
+ if(!db){firebase.initializeApp(firebaseConfig);db=firebase.database();}
+ const id=makeCode();myName=$("nickname").value.trim()||"Người chơi";
+ const initial={players:{[playerId]:{name:myName,joinedAt:Date.now()}},spins:{},createdAt:Date.now()};
+ try{await db.ref("rooms/"+id).set(initial);roomId=id;roomRef=db.ref("rooms/"+id);$("setup").classList.add("hidden");$("game").classList.remove("hidden");$("roomCode").textContent=id;roomRef.on("value",s=>{state=s.val();render();});}
+ catch(e){status("Không tạo được phòng. Kiểm tra cấu hình và quyền Firebase.");}
+};
+$("joinBtn").onclick=()=>{
+ if(!configured()){status("Bạn cần làm bước cấu hình Firebase trong README.txt trước nhé.");return;}
+ if(!db){firebase.initializeApp(firebaseConfig);db=firebase.database();}
+ const id=$("roomInput").value.trim();if(id.length!==6){status("Mã phòng gồm 6 ký tự.");return;}enterRoom(id);
+};
+$("spinBtn").onclick=spin;
+$("copyBtn").onclick=async()=>{try{await navigator.clipboard.writeText(roomId);$("copyBtn").textContent="Đã sao chép!";}catch(e){$("copyBtn").textContent="Mã: "+roomId;}};
+$("leaveBtn").onclick=()=>{if(roomRef)roomRef.off();roomRef=null;roomId=null;state=null;$("game").classList.add("hidden");$("setup").classList.remove("hidden");};
+</script>
+</body></html>
